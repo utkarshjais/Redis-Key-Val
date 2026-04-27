@@ -29,7 +29,7 @@ public class RetryQueue {
     private final String queueFilePath;
 
     public RetryQueue(String nodeId) {
-        this.queueFilePath = "/tmp/kvstore_retry_" + nodeId + ".dat";
+        this.queueFilePath = System.getProperty("java.io.tmpdir") + "/kvstore_retry_" + nodeId + ".dat";
         loadFromDisk();
     }
 

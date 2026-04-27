@@ -13,7 +13,7 @@ public class SnapshotManager {
     private final String snapshotPath;
 
     public SnapshotManager(String nodeId) {
-        this.snapshotPath = "/tmp/kvstore_snapshot_" + nodeId + ".dat";
+        this.snapshotPath = System.getProperty("java.io.tmpdir") + "/kvstore_snapshot_" + nodeId + ".dat";
     }
 
     // Copy-on-write: lock held only while copying map reference

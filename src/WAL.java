@@ -13,7 +13,7 @@ public class WAL {
     private       long     nextIndex = 0;
 
     public WAL(String nodeId) {
-        this.filePath  = "/tmp/kvstore_wal_" + nodeId + ".log";
+        this.filePath  = System.getProperty("java.io.tmpdir") + "/kvstore_wal_" + nodeId + ".log";
         this.nextIndex = countExistingEntries();
     }
 
