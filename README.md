@@ -161,35 +161,7 @@ Every acknowledged write is in one of the two. ✅
 
 ---
 
-## File Structure
 
-```
-kvstore/
-├── VersionedValue.java    # Data model — value + version + timestamp
-├── WALEntry.java          # Single WAL record — serialize/deserialize
-├── WAL.java               # Append-only on-disk log
-├── SnapshotBundle.java    # Snapshot data holder
-├── SnapshotManager.java   # Take and load periodic snapshots
-├── RetryQueue.java        # Hinted handoff — disk-backed retry queue
-├── KVStore.java           # Core store — put/get/replicate/backup/recover
-└── Main.java              # TestableKVStore + 8 test cases
-```
-
----
-
-## Running the Tests
-
-```bash
-# Compile all files
-javac *.java
-
-# Run
-java Main
-```
-
-Expected output: all 8 tests pass, ending with `=== ALL TESTS PASSED ===`
-
----
 
 ## Test Coverage
 
