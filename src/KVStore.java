@@ -94,7 +94,7 @@ public class KVStore {
     //   strong=false → return local value immediately (fast, possibly stale)
     // ============================================================
     public Object get(String key) {
-        return get(key, true);
+        return get(key, false);
     }
 
     public Object get(String key, boolean strong) {
