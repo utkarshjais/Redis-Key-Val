@@ -63,31 +63,31 @@ public class Main {
         node1.put("user:1", "Alice");
         Thread.sleep(100);
         System.out.println("node1 get user:1 = " + node1.get("user:1"));
-        System.out.println("node2 get user:1 = " + node2.get("user:1", false));
-        System.out.println("node3 get user:1 = " + node3.get("user:1", false));
+        System.out.println("node2 get user:1 = " + node2.get("user:1", true));
+        System.out.println("node3 get user:1 = " + node3.get("user:1", true));
 
         // --- Test 2: Replication ---
         System.out.println("\n--- Test 2: All nodes have same data ---");
         node1.put("user:2", "Bob");
         Thread.sleep(100);
-        System.out.println("node1=" + node1.get("user:2", false));
-        System.out.println("node2=" + node2.get("user:2", false));
-        System.out.println("node3=" + node3.get("user:2", false));
+        System.out.println("node1=" + node1.get("user:2", true));
+        System.out.println("node2=" + node2.get("user:2", true));
+        System.out.println("node3=" + node3.get("user:2", true));
 
         // --- Test 3: One node down ---
         System.out.println("\n--- Test 3: node3 crashes, writes still work ---");
         node3.setDown(true);
         boolean result = node1.put("user:3", "Charlie");
         System.out.println("put with node3 down: " + result);
-        System.out.println("node1 get user:3 = " + node1.get("user:3", false));
-        System.out.println("node2 get user:3 = " + node2.get("user:3", false));
+        System.out.println("node1 get user:3 = " + node1.get("user:3", true));
+        System.out.println("node2 get user:3 = " + node2.get("user:3", true));
 
         // --- Test 4: Node recovers ---
         System.out.println("\n--- Test 4: node3 recovers and catches up ---");
-        node3.setDown(false);
+        node3.setDown(true);
         node3.catchUpFromPeers();
         Thread.sleep(100);
-        System.out.println("node3 get user:3 = " + node3.get("user:3", false));
+        System.out.println("node3 get user:3 = " + node3.get("user:3", true));
 
         // --- Test 5: Concurrent writes to the same key ---
         // Node1 and Node2 both write "user:5" at the same time.
@@ -107,26 +107,26 @@ public class Main {
         // All three nodes must agree on the same winner.
         Object winner = node1.get("user:5"); // strong read — checks all nodes
         System.out.println("Concurrent write winner : " + winner);
-        System.out.println("node1 agrees            : " + node1.get("user:5", false));
-        System.out.println("node2 agrees            : " + node2.get("user:5", false));
-        System.out.println("node3 agrees            : " + node3.get("user:5", false));
+        System.out.println("node1 agrees            : " + node1.get("user:5", true));
+        System.out.println("node2 agrees            : " + node2.get("user:5", true));
+        System.out.println("node3 agrees            : " + node3.get("user:5", true));
         // All four lines must print the same value
         boolean allAgree = winner != null
-                && winner.equals(node1.get("user:5", false))
-                && winner.equals(node2.get("user:5", false))
-                && winner.equals(node3.get("user:5", false));
+                && winner.equals(node1.get("user:5", true))
+                && winner.equals(node2.get("user:5", true))
+                && winner.equals(node3.get("user:5", true));
         System.out.println("All nodes converged     : " + allAgree);
 
         // --- Test 6: Strong read vs stale read ---
         // Write on node1. Before replication finishes, read from node3.
-        // strong=false (stale read) may return null or old value — that is OK,
+        // strong=true (stale read) may return null or old value — that is OK,
         // it is the fast path that trades consistency for speed.
         // strong=true  (quorum read) always returns the latest value because
         // it contacts all nodes and picks the highest version.
         System.out.println("\n--- Test 6: Strong read vs stale read ---");
         node1.put("user:6", "Fresh");
         // Read immediately from node3 before replication has time to arrive
-        Object staleResult  = node3.get("user:6", false); // local only — may be null
+        Object staleResult  = node3.get("user:6", true); // local only — may be null
         Object strongResult = node3.get("user:6", true);  // checks all nodes — always fresh
         System.out.println("node3 stale  read (local only) : " + staleResult);
         System.out.println("node3 strong read (all nodes)  : " + strongResult);
@@ -144,8 +144,8 @@ public class Main {
         node1.put("user:7", "SameValue"); // exact same key + value again
         Thread.sleep(100);
         System.out.println("After 2 identical writes : " + node1.get("user:7"));
-        System.out.println("node2 has correct value  : " + node2.get("user:7", false));
-        System.out.println("node3 has correct value  : " + node3.get("user:7", false));
+        System.out.println("node2 has correct value  : " + node2.get("user:7", true));
+        System.out.println("node3 has correct value  : " + node3.get("user:7", true));
         // Value must still be "SameValue", not null, not duplicated, not corrupted
 
         // --- Test 8: Live backup ---
