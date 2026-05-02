@@ -8,7 +8,7 @@ import java.io.Serializable;
 // Assumption: clock skew between servers is 10-100ms.
 // Writes happening seconds apart will always resolve correctly.
 // For millisecond-level concurrent writes in production,
-// a Lamport clock would be more accurate.
+// a Lamport or vector clock would be more accurate.
 // ============================================================
 
 public class VersionedValue implements Serializable {

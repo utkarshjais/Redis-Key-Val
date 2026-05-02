@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
 
 // ============================================================
@@ -81,20 +80,8 @@ public class KVStore {
         }
     }
 
-    // ============================================================
-    // GET
-    //   strong=true  → ask all peers, take highest version (linearizable)
-    //   strong=false → return local value immediately (fast, possibly stale)
-    // ============================================================
-    public Object get(String key) {
-        return get(key, true);
-    }
 
-    public Object get(String key, boolean strong) {
-        if (!strong) {
-            VersionedValue local = store.get(key);
-            return local == null ? null : local.value;
-        }
+    public Object get(String key) {
 
         // Strong read: ask all nodes, return highest version value
         VersionedValue best = store.get(key);
@@ -128,8 +115,6 @@ public class KVStore {
     public boolean put(String key, Object value) {
         try {
             // Timestamp is the conflict resolver — last write wins.
-            // Clock skew between nodes is typically 10-100ms so writes
-            // happening seconds apart always resolve correctly.
             long timestamp = System.currentTimeMillis();
             VersionedValue vv = new VersionedValue(value, timestamp);
 
@@ -171,7 +156,7 @@ public class KVStore {
 
     // ============================================================
     // REPLICATE TO PEER
-    // If peer is down → add to retry queue (stored on disk).
+    // If peer is down → add to retry queue.
     // ============================================================
     private boolean replicateToPeer(String peer, String key,
                                     VersionedValue vv, WALEntry entry) {
@@ -402,7 +387,7 @@ public class KVStore {
     }
 
     // ============================================================
-    // SEND TO NODE — black-box RPC (implemented by subclass/framework)
+    // SEND TO NODE (implemented by subclass/framework)
     // Returns null if peer is unreachable
     // ============================================================
     protected Map<String, Object> sendToNode(String targetNode, Map<String, Object> message) {

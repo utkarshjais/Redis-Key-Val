@@ -26,7 +26,6 @@ public class WAL {
                 bw.write(entry.serialize());
                 bw.newLine();
                 bw.flush();
-                // In production: FileDescriptor.sync() for true fsync
             }
             return entry;
         }
