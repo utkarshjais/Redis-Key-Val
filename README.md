@@ -69,7 +69,7 @@ When a peer node is unreachable during replication, the write is not dropped. In
 ---
 
 ### 6. Versioning + Last-Write-Wins
-Every value is wrapped with a version number (monotonically incrementing) and a timestamp (tiebreaker). When two nodes receive conflicting values for the same key, the higher version wins.
+Every value is wrapped with a  a timestamp (tiebreaker). When two nodes receive conflicting values for the same key, the higher timestamp wins.
 
 - **Why:** In a leaderless system, two nodes can accept writes for the same key simultaneously. Without versioning, the outcome would be random depending on replication order. Versioning makes conflict resolution deterministic.
 - **Tradeoff:** Last-write-wins means one concurrent write is silently discarded. Acceptable for most use cases. Applications that cannot tolerate this would need vector clocks or application-level merge logic.
@@ -88,12 +88,12 @@ Every value is wrapped with a version number (monotonically incrementing) and a 
 ┌─────────────────────────────────────────────────────────────┐
 │                     NODE 1 (coordinator)                    │
 │                                                             │
-│  1. version = counter++                                     │
-│  2. WAL.append(key, value)  ──► disk: wal_node1.log        │
-│  3. store.put(key, value)   ──► memory                     │
-│  4. replicate concurrently ─────────────────────┐          │
-│                                                 │          │
-│  5. wait for 2 ACKs (self + 1 peer)             │          │
+│  1. version = timestamp                                     │
+│  2. WAL.append(key, value)  ──► disk: wal_node1.log         │
+│  3. store.put(key, value)   ──► memory                      │
+│  4. replicate concurrently ─────────────────────┐           │
+│                                                 │           │
+│  5. wait for 2 ACKs (self + 1 peer)             │           │
 │  6. return true to client ✅                    │          │
 └─────────────────────────────────────────────────┼──────────┘
                                                   │
