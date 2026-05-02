@@ -126,7 +126,7 @@ public class Main {
         System.out.println("\n--- Test 6: Strong read vs stale read ---");
         node1.put("user:6", "Fresh");
         // Read immediately from node3 before replication has time to arrive
-        Object staleResult  = node3.get("user:6", true); // local only — may be null
+        Object staleResult  = node3.get("user:6", false);
         Object strongResult = node3.get("user:6", true);  // checks all nodes — always fresh
         System.out.println("node3 stale  read (local only) : " + staleResult);
         System.out.println("node3 strong read (all nodes)  : " + strongResult);

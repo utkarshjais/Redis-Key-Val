@@ -2,29 +2,32 @@ import java.io.Serializable;
 
 // ============================================================
 // DATA MODEL
-// Every stored value carries metadata for conflict resolution
+// Every stored value carries a timestamp for conflict resolution.
+// Higher timestamp wins — last write wins.
+//
+// Assumption: clock skew between servers is 10-100ms.
+// Writes happening seconds apart will always resolve correctly.
+// For millisecond-level concurrent writes in production,
+// a Lamport clock would be more accurate.
 // ============================================================
 
 public class VersionedValue implements Serializable {
     public final Object value;
-    public final long version;    // monotonically increasing, used for conflict resolution
-    public final long timestamp;  // tiebreaker if versions are equal (concurrent writes)
+    public final long timestamp;  // wall clock time of write — used for conflict resolution
 
-    public VersionedValue(Object value, long version, long timestamp) {
+    public VersionedValue(Object value, long timestamp) {
         this.value     = value;
-        this.version   = version;
         this.timestamp = timestamp;
     }
 
-    // Higher version wins. If tie → higher timestamp wins.
+    // Higher timestamp wins — written later = more recent = wins.
     public boolean isNewerThan(VersionedValue other) {
         if (other == null) return true;
-        if (this.version != other.version) return this.version > other.version;
         return this.timestamp > other.timestamp;
     }
 
     @Override
     public String toString() {
-        return String.format("VersionedValue{value=%s, version=%d}", value, version);
+        return String.format("VersionedValue{value=%s, timestamp=%d}", value, timestamp);
     }
 }

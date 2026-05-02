@@ -27,9 +27,6 @@ public class KVStore {
     private final ConcurrentHashMap<String, VersionedValue> store = new ConcurrentHashMap<>();
     private final ReadWriteLock storeLock = new ReentrantReadWriteLock();
 
-    // Version counter — increments on every write this node coordinates
-    private final AtomicLong versionCounter = new AtomicLong(0);
-
     // ---- Persistence ----
     private final WAL             wal;
     private final SnapshotManager snapshotManager;
@@ -76,10 +73,6 @@ public class KVStore {
                 applyEntry(entry.key, entry.vv);
             }
 
-            long maxVersion = store.values().stream()
-                    .mapToLong(v -> v.version).max().orElse(0);
-            versionCounter.set(maxVersion + 1);
-
             System.out.println("[" + nodeId + "] Recovery complete. Keys: " +
                     store.size() + ", WAL entries replayed: " + entries.size());
 
@@ -125,7 +118,7 @@ public class KVStore {
 
     // ============================================================
     // PUT
-    // 1. Assign version number
+    // 1. Record current timestamp
     // 2. Write to own WAL (durable before proceeding)
     // 3. Apply to own memory
     // 4. Replicate to all peers concurrently
@@ -134,9 +127,11 @@ public class KVStore {
     // ============================================================
     public boolean put(String key, Object value) {
         try {
-            long version   = versionCounter.getAndIncrement();
+            // Timestamp is the conflict resolver — last write wins.
+            // Clock skew between nodes is typically 10-100ms so writes
+            // happening seconds apart always resolve correctly.
             long timestamp = System.currentTimeMillis();
-            VersionedValue vv = new VersionedValue(value, version, timestamp);
+            VersionedValue vv = new VersionedValue(value, timestamp);
 
             WALEntry entry = wal.append(key, vv);
             applyEntry(key, vv);
@@ -243,7 +238,6 @@ public class KVStore {
                 response.put("nodeId", nodeId);
                 response.put("keys", store.size());
                 response.put("latestWalIndex", wal.getLatestIndex());
-                response.put("version", versionCounter.get());
                 break;
             }
 
@@ -289,7 +283,7 @@ public class KVStore {
     }
 
     // ============================================================
-    // APPLY ENTRY — idempotent, version-guarded
+    // APPLY ENTRY — idempotent, timestamp-guarded
     // ============================================================
     private void applyEntry(String key, VersionedValue incoming) {
         store.merge(key, incoming, (existing, newVal) ->
@@ -399,7 +393,6 @@ public class KVStore {
         s.put("nodeId",         nodeId);
         s.put("keys",           store.size());
         s.put("latestWalIndex", wal.getLatestIndex());
-        s.put("version",        versionCounter.get());
         s.put("retryQueueSize", retryQueue.getAll().size());
         return s;
     }

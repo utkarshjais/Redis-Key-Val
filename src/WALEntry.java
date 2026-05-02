@@ -2,12 +2,12 @@ import java.io.Serializable;
 
 // ============================================================
 // WAL ENTRY
-// One line per committed write on disk
-// index + key + value + version → enough to fully rebuild state
+// One line per committed write on disk.
+// index + key + timestamp + value → enough to fully rebuild state.
 // ============================================================
 
 public class WALEntry implements Serializable {
-    public final long   index;      // sequential, used to find missing entries on catch-up
+    public final long   index;   // sequential — used to find missing entries on catch-up
     public final String key;
     public final VersionedValue vv;
 
@@ -19,18 +19,16 @@ public class WALEntry implements Serializable {
 
     // Serialize to one JSON-like line for easy append
     public String serialize() {
-        return String.format("{\"index\":%d,\"key\":\"%s\",\"version\":%d," +
-                        "\"timestamp\":%d,\"value\":\"%s\"}",
-                index, key, vv.version, vv.timestamp, vv.value);
+        return String.format("{\"index\":%d,\"key\":\"%s\",\"timestamp\":%d,\"value\":\"%s\"}",
+                index, key, vv.timestamp, vv.value);
     }
 
     public static WALEntry deserialize(String line) {
         long   index     = Long.parseLong(extractField(line, "index"));
         String key       = extractField(line, "key");
-        long   version   = Long.parseLong(extractField(line, "version"));
         long   timestamp = Long.parseLong(extractField(line, "timestamp"));
         String value     = extractField(line, "value");
-        return new WALEntry(index, key, new VersionedValue(value, version, timestamp));
+        return new WALEntry(index, key, new VersionedValue(value, timestamp));
     }
 
     private static String extractField(String json, String field) {
