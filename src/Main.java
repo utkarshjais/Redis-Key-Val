@@ -83,7 +83,7 @@ public class Main {
 
         // --- Test 4: Node recovers ---
         System.out.println("\n--- Test 4: node3 recovers and catches up ---");
-        node3.setDown(true);
+        node3.setDown(false);
         node3.catchUpFromPeers();
         Thread.sleep(100);
         System.out.println("node3 get user:3 = " + node3.get("user:3"));
