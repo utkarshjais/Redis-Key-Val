@@ -172,6 +172,5 @@ Every acknowledged write is in one of the two. ✅
 | 3. Node crash | System accepts writes with only 2/3 nodes up |
 | 4. Node recovery | Crashed node catches up missed writes on restart |
 | 5. Concurrent writes | Higher version wins, all nodes converge to same value |
-| 6. Strong vs stale read | `strong=false` is fast but may be stale; `strong=true` is always fresh |
-| 7. Duplicate writes | Writing same key twice does not corrupt data |
-| 8. Live backup | Backup captures all keys with no writes lost |
+| 6. Duplicate writes | Writing same key twice does not corrupt data |
+| 7. Live backup | Backup captures all keys with no writes lost |
