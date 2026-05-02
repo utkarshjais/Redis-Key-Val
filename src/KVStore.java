@@ -85,11 +85,15 @@ public class KVStore {
 
         // Strong read: ask all nodes, return highest version value
         VersionedValue best = store.get(key);
-
+        int nodesConsulted = best != null ? 1 : 0;
         for (String peer : peerNodes) {
+            if (nodesConsulted >= QUORUM) {
+                break;
+            }
             Map<String, Object> request = new HashMap<>();
             request.put("action", "get");
             request.put("key", key);
+
 
             Map<String, Object> response = sendToNode(peer, request);
             if (response != null && response.containsKey("vv")) {
@@ -97,6 +101,7 @@ public class KVStore {
                 if (peerVV != null && peerVV.isNewerThan(best)) {
                     best = peerVV;
                 }
+                nodesConsulted++;
             }
         }
 
