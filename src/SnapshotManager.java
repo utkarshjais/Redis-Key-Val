@@ -37,7 +37,7 @@ public class SnapshotManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
+
     public SnapshotBundle loadSnapshot() throws IOException, ClassNotFoundException {
         File file = new File(snapshotPath);
         if (!file.exists()) return null;

@@ -135,7 +135,7 @@ public class Main {
         // --- Test 7: Live backup ---
         // Backup runs while writes are live. No write should be lost.
         // Returns a snapshot + WAL tail bundle that covers everything.
-        System.out.println("\n--- Test 8: Live backup ---");
+        System.out.println("\n--- Test 7: Live backup ---");
         Map<String, Object> bundle = node1.backup();
         System.out.println("Backup keys: " +
                 ((Map<?, ?>) bundle.get("snapshot")).size());

@@ -83,7 +83,7 @@ public class KVStore {
 
     public Object get(String key) {
 
-        // Strong read: ask all nodes, return highest version value
+        // Strong read: ask any 2 nodes, return highest version value
         VersionedValue best = store.get(key);
         int nodesConsulted = best != null ? 1 : 0;
         for (String peer : peerNodes) {
@@ -221,13 +221,6 @@ public class KVStore {
                 } catch (IOException e) {
                     response.put("entries", new ArrayList<>());
                 }
-                break;
-            }
-
-            case "status": {
-                response.put("nodeId", nodeId);
-                response.put("keys", store.size());
-                response.put("latestWalIndex", wal.getLatestIndex());
                 break;
             }
 
