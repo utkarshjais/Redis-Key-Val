@@ -310,6 +310,26 @@ public class KVStore {
         return bundle;
     }
 
+    @SuppressWarnings("unchecked")
+    public void restoreFromBackup(Map<String, Object> bundle) {
+        Map<String, VersionedValue> snapshot =
+                (Map<String, VersionedValue>) bundle.get("snapshot");
+        List<WALEntry> walTail = (List<WALEntry>) bundle.get("walTail");
+
+        storeLock.writeLock().lock();
+        try {
+            store.clear();
+            store.putAll(snapshot);
+        } finally {
+            storeLock.writeLock().unlock();
+        }
+
+        for (WALEntry entry : walTail) {
+            applyEntry(entry.key, entry.vv);
+        }
+
+        System.out.println("[" + nodeId + "] Restored from backup. Keys: " + store.size());
+    }
 
     // ============================================================
     // BACKGROUND TASKS
