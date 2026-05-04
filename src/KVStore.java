@@ -276,8 +276,7 @@ public class KVStore {
 
     // ============================================================
     // BACKUP / RESTORE
-    // Live backup: snapshot + WAL tail captured under read lock.
-    // Restore: apply snapshot then replay WAL tail.
+    // Only used for disaster recovery , incase we call it externally
     // ============================================================
     public Map<String, Object> backup() {
         Map<String, VersionedValue> snapshot;
